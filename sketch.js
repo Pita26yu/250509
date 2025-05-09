@@ -4,6 +4,9 @@
 let video;
 let handPose;
 let hands = [];
+let circleX = 320; // Initial x position of the circle
+let circleY = 240; // Initial y position of the circle
+let circleSize = 100; // Diameter of the circle
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -30,10 +33,26 @@ function setup() {
 function draw() {
   image(video, 0, 0);
 
+  // Draw the circle
+  fill(255, 0, 0); // Red color
+  noStroke();
+  ellipse(circleX, circleY, circleSize);
+
   // Ensure at least one hand is detected
   if (hands.length > 0) {
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
+        // Get the position of the index finger tip (keypoint 8)
+        let indexFinger = hand.keypoints[8];
+
+        // Check if the index finger is touching the circle
+        let distanceToCircle = dist(indexFinger.x, indexFinger.y, circleX, circleY);
+        if (distanceToCircle < circleSize / 2) {
+          // Move the circle to follow the index finger
+          circleX = indexFinger.x;
+          circleY = indexFinger.y;
+        }
+
         // Draw lines connecting specific keypoints
         stroke(0, 255, 0); // Set line color
         strokeWeight(2);
