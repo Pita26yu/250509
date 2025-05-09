@@ -7,6 +7,8 @@ let hands = [];
 let circleX = 320; // Initial x position of the circle
 let circleY = 240; // Initial y position of the circle
 let circleSize = 100; // Diameter of the circle
+let isTrackingIndex = false; // Track if index finger is moving the circle
+let isTrackingThumb = false; // Track if thumb is moving the circle
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -46,14 +48,34 @@ function draw() {
         let indexFinger = hand.keypoints[8];
         let thumb = hand.keypoints[4];
 
-        // Check if both the index finger and thumb are touching the circle
+        // Check if the index finger is touching the circle
         let distanceToCircleIndex = dist(indexFinger.x, indexFinger.y, circleX, circleY);
-        let distanceToCircleThumb = dist(thumb.x, thumb.y, circleX, circleY);
+        if (distanceToCircleIndex < circleSize / 2) {
+          // Move the circle to follow the index finger
+          if (!isTrackingThumb) { // Only move with index if thumb is not tracking
+            stroke(255, 0, 0); // Red color for index finger
+            line(circleX, circleY, indexFinger.x, indexFinger.y); // Draw red trajectory
+            circleX = indexFinger.x;
+            circleY = indexFinger.y;
+            isTrackingIndex = true;
+          }
+        } else {
+          isTrackingIndex = false;
+        }
 
-        if (distanceToCircleIndex < circleSize / 2 && distanceToCircleThumb < circleSize / 2) {
-          // Move the circle to follow the midpoint between the index finger and thumb
-          circleX = (indexFinger.x + thumb.x) / 2;
-          circleY = (indexFinger.y + thumb.y) / 2;
+        // Check if the thumb is touching the circle
+        let distanceToCircleThumb = dist(thumb.x, thumb.y, circleX, circleY);
+        if (distanceToCircleThumb < circleSize / 2) {
+          // Move the circle to follow the thumb
+          if (!isTrackingIndex) { // Only move with thumb if index is not tracking
+            stroke(0, 255, 0); // Green color for thumb
+            line(circleX, circleY, thumb.x, thumb.y); // Draw green trajectory
+            circleX = thumb.x;
+            circleY = thumb.y;
+            isTrackingThumb = true;
+          }
+        } else {
+          isTrackingThumb = false;
         }
 
         // Draw lines connecting specific keypoints
